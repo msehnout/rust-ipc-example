@@ -2,11 +2,14 @@ use std::os::unix::net::UnixListener;
 use std::io::{self, Read, Error, ErrorKind};
 use std::str;
 
+static SOCK_PATH: &str = "/tmp/rusty-server";
+static BUF_SIZE: usize = 512;
+
 fn run_server() -> io::Result<()> {
-    let _ = std::fs::remove_file("/tmp/rusty-server");
-    let listener = UnixListener::bind("/tmp/rusty-server")?;
+    let _ = std::fs::remove_file(SOCK_PATH);
+    let listener = UnixListener::bind(SOCK_PATH)?;
     let (mut stream, _) = listener.accept()?;
-    let mut buffer = vec![0u8; 512];
+    let mut buffer = vec![0u8; BUF_SIZE];
     loop {
         match stream.read(&mut buffer){
             Ok(0) => break,
@@ -17,7 +20,7 @@ fn run_server() -> io::Result<()> {
         }
     }
     drop(listener);
-    std::fs::remove_file("/tmp/rusty-server")?;
+    std::fs::remove_file(SOCK_PATH)?;
     Ok(())
 }
 
